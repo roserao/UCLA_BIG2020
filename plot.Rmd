@@ -1,0 +1,41 @@
+---
+title: "plot"
+author: "Jingyou Rao"
+date: "7/14/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+```
+
+# sample_size
+```{r}
+root = "./sample_size"
+file = list.files(root)
+h2g_hess = NULL
+for (i in 1:length(file)) {
+  h2g = read.csv(paste(root, file[i], sep = "/"), header = FALSE)
+  temp = strsplit(file[i], "_")[[1]][3]
+  ss = substr(temp, 1, nchar(temp)-4)
+  h2g$V2 = ss
+  h2g_hess = rbind(h2g_hess, h2g)
+}
+rm(i, root, file, ss, temp, h2g)
+colnames(h2g_hess) <- c("h2g_pred", "sample_size")
+```
+
+```{r}
+h2g_hess$sample_size <- ordered(h2g_hess$sample_size, 
+                                levels = c("20", "50", "100", "200", "500"))
+ggplot(h2g_hess, aes(x=sample_size, y=h2g_pred)) + 
+  geom_point(na.rm = TRUE) +
+  labs(title = "Heritability Prediction (HESS) vs. Sample Size",
+       x = "Sample Size", y = "Gene Heritability Prediction")
+  
+```
+
