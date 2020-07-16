@@ -1,0 +1,17 @@
+# basic
+np.random.seed(3750)
+self.bfile = "dgkd.AFR.SNPs.clean"
+self.ldfile = "dgkd.AFR.SNPs.clean.ld"
+self.num_sim = 100
+# genotype
+geno = Bed(self.bfile, count_A1=False)
+self.tss = 234263153
+self.num_indv_all, self.num_snps_all = geno.shape
+# sampling
+self.num_indv = 200
+self.num_snp = 10
+self.num_causal = 2
+# isoform
+self.num_iso = 2
+self.h2g = 0.08
+self.cov_iso = np.array([[1, 0.3], [0.3, 1]])
