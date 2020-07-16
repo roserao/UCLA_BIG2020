@@ -194,7 +194,7 @@ class BaseModel:
             idx = np.isin(snp_idx[:, sim_i], snp_causal[:, sim_i])
             beta_est_gene = beta_est_gene[idx]
             beta_est_iso = beta_est_iso[idx]
-            h2g_gene = np.linalg.multi_dot([beta_est_gene, V, beta_est_gene])
+            h2g_gene = np.linalg.multi_dot([beta_est_gene, V, beta_est_gene])/np.sum(self.cov_iso)
             h2g_iso = np.linalg.multi_dot([beta_est_iso, V, beta_est_iso])/np.sum(self.cov_iso)
             h2g_est_gene[sim_i] = h2g_gene
             h2g_est_iso[sim_i] = h2g_iso
@@ -204,13 +204,13 @@ class BaseModel:
 
 if __name__ == '__main__':
     model = BaseModel()
-    #model.sample()
-    #model.ld_extract()
-    #model.compute_beta()
+    model.sample()
+    model.ld_extract()
+    model.compute_beta()
 
-    #model.compute_iso_h2()
-    #model.compute_phe_g()
-    #model.compute_phe()
+    model.compute_iso_h2()
+    model.compute_phe_g()
+    model.compute_phe()
 
     model.hess_h2g() # change the function here
     model.h2g_formula()
