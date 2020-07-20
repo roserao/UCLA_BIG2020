@@ -1,0 +1,137 @@
+---
+title: "plot_0720"
+author: "Jingyou Rao"
+date: "7/20/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(ggplot2)
+```
+
+# isoform_dist
+```{r}
+root <- "./isoform_dist/100.100"
+file <- list.files(root)[2:4]
+h2g_isodist <- NULL
+for (i in 1:length(file)) {
+  h2g <- read.csv(paste(root, file[i], sep = "/"), header = FALSE)
+  h2g$V2 <- file[i]
+  h2g_isodist <- rbind(h2g_isodist, h2g)
+}
+rm(i, root, file, h2g)
+h2g_isodist$sample_size <- 100
+h2g_isodist$iso_dist <- "100.0"
+colnames(h2g_isodist) <- c("h2g_pred", "method", "sample_size", "iso_dist")
+```
+
+```{r}
+root <- "./isoform_dist/50.100"
+file <- list.files(root)[2:4]
+temp <- NULL
+for (i in 1:length(file)) {
+  h2g <- read.csv(paste(root, file[i], sep = "/"), header = FALSE)
+  h2g$method <- file[i]
+  temp <- rbind(temp, h2g)
+}
+temp$sample_size <- 100
+temp$iso_dist <- "50.50"
+colnames(temp) <- c("h2g_pred", "method", "sample_size", "iso_dist")
+h2g_isodist <- rbind(temp, h2g_isodist)
+rm(i, root, file, h2g, temp)
+```
+
+```{r}
+h2g_isodist$method <- as.factor(h2g_isodist$method)
+levels(h2g_isodist$method) <- c("formula_gene", "formula_isoform", "HESS")
+```
+
+# GREML
+```{r}
+root <- "./isoform_dist/100.100/results"
+file <- list.files(root)
+file <- file[grep("(*)1.cis.hsq", file)]
+h2g_greml <- NULL
+for (i in 1:length(file)) {
+  h2g <- read.delim(paste(root, file[i], sep = "/"), header = FALSE)[5, 2:3]
+  h2g_mean <- h2g[1, 1]
+  h2g_mean <- as.numeric(levels(h2g_mean)[h2g_mean])
+  h2g_var <- h2g[1, 2]
+  h2g_var <- as.numeric(levels(h2g_var)[h2g_var])
+  h2g_greml <- rbind(h2g_greml, c(h2g_mean, h2g_var))
+}
+h2g_greml <- data.frame(h2g_greml)
+colnames(h2g_greml) <- c("h2g_pred", "var")
+h2g_greml$method <- "GREML"
+rm(i, root, h2g_var, h2g_mean, file, h2g)
+h2g_greml$sample_size = 100
+h2g_greml$iso_dist = "100.0"
+```
+
+
+```{r}
+root <- "./isoform_dist/50.100/results"
+file <- list.files(root)
+file <- file[grep("(*)1.cis.hsq", file)]
+temp <- NULL
+for (i in 1:length(file)) {
+  h2g <- read.delim(paste(root, file[i], sep = "/"), header = FALSE)[5, 2:3]
+  h2g_mean <- h2g[1, 1]
+  h2g_mean <- as.numeric(levels(h2g_mean)[h2g_mean])
+  h2g_var <- h2g[1, 2]
+  h2g_var <- as.numeric(levels(h2g_var)[h2g_var])
+  temp <- rbind(temp, c(h2g_mean, h2g_var))
+}
+temp <- data.frame(temp)
+colnames(temp) <- c("h2g_pred", "var")
+temp$method <- "GREML"
+temp$sample_size = 100
+temp$iso_dist = "50.50"
+h2g_greml <- rbind(h2g_greml, temp)
+rm(i, root, h2g_var, h2g_mean, file, h2g, temp)
+```
+
+
+```{r}
+h2g_total <- rbind(h2g_isodist, h2g_greml[, c(1,3:5)])
+```
+
+```{r}
+ggplot(h2g_total[h2g_total$iso_dist=="100.0",], aes(x=method, y=h2g_pred)) + 
+  geom_boxplot(na.rm = TRUE) +
+  geom_jitter(na.rm = TRUE) +
+  geom_hline(yintercept = 0.08, linetype="dashed", color = "red", size = 1.5) +
+  labs(title = "Heritability Prediction with Different Methods", subtitle = "Sample Size: 100",
+       x = "Method", y = "Gene Heritability Prediction")
+
+ggplot(h2g_total[h2g_total$iso_dist=="50.50",], aes(x=method, y=h2g_pred)) + 
+  geom_boxplot(na.rm = TRUE) +
+  geom_jitter(na.rm = TRUE) +
+  geom_hline(yintercept = 0.08, linetype="dashed", color = "red", size = 1.5) +
+  labs(title = "Heritability Prediction with Different Methods", subtitle = "Sample Size: 100",
+       x = "Method", y = "Gene Heritability Prediction")
+```
+
+```{r}
+ggplot(h2g_total, aes(x=method, y=h2g_pred, fill = as.factor(iso_dist))) + 
+  geom_boxplot(na.rm = TRUE) +
+  geom_jitter(na.rm = TRUE, size = 0.7, aes(colour = as.factor(iso_dist)),
+              position = position_jitterdodge()) +
+  geom_hline(yintercept = 0.08, linetype="dashed", color = "red", size = 1.5) +
+  labs(title = "Heritability Prediction w/ different isoform heritability distribution", 
+       subtitle = "Sample Size: 100",
+       x = "Method", y = "Gene Heritability Prediction", fill = "Heritability Distribution") +
+  guides(colour = FALSE)
+```
+
+
+
+
+
+
+
+
